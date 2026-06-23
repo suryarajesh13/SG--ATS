@@ -40,46 +40,59 @@ ROLE_DISPLAY_LABELS = {
 }
 
 CATEGORY_ICONS = {
-    "open_source": "🌐",
-    "self_projects": "🚀",
-    "production": "🏢",
-    "technical_skills": "💻",
-    "sg_technical_skills": "💻",
-    "projects_and_delivery": "🚀",
-    "production_experience": "🏢",
-    "professional_readiness": "📋",
-    "sg_certifications": "🎓",
-    "accounting_experience": "📊",
-    "finance_systems": "🖥️",
-    "professional_communication": "🗣️",
-    "sg_audit_credentials": "🏅",
-    "audit_experience": "🔍",
-    "controls_and_regulatory": "⚖️",
-    "audit_tools_and_analysis": "🛠️",
-    "sg_hr_credentials": "🎓",
-    "hr_operations_and_specialisation": "👥",
-    "stakeholder_management": "🤝",
-    "hr_systems_and_compliance": "🧾",
-    "sg_banking_credentials": "🏦",
-    "banking_experience": "💼",
-    "regulatory_and_risk": "⚠️",
-    "systems_and_analysis": "📈",
+    "open_source": "\U0001f310",
+    "self_projects": "\U0001f680",
+    "production": "\U0001f3e2",
+    "technical_skills": "\U0001f4bb",
+    "sg_technical_skills": "\U0001f4bb",
+    "projects_and_delivery": "\U0001f680",
+    "production_experience": "\U0001f3e2",
+    "professional_readiness": "\U0001f4cb",
+    "sg_certifications": "\U0001f393",
+    "accounting_experience": "\U0001f4ca",
+    "finance_systems": "\U0001f5a5\ufe0f",
+    "professional_communication": "\U0001f5e3\ufe0f",
+    "sg_audit_credentials": "\U0001f3c5",
+    "audit_experience": "\U0001f50d",
+    "controls_and_regulatory": "\u2696\ufe0f",
+    "audit_tools_and_analysis": "\U0001f6e0\ufe0f",
+    "sg_hr_credentials": "\U0001f393",
+    "hr_operations_and_specialisation": "\U0001f465",
+    "stakeholder_management": "\U0001f91d",
+    "hr_systems_and_compliance": "\U0001f9fe",
+    "sg_banking_credentials": "\U0001f3e6",
+    "banking_experience": "\U0001f4bc",
+    "regulatory_and_risk": "\u26a0\ufe0f",
+    "systems_and_analysis": "\U0001f4c8",
 }
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Evaluate a resume PDF.")
+    parser = argparse.ArgumentParser(
+        description="Evaluate a resume PDF.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     parser.add_argument("pdf_path", help="Path to the resume PDF file.")
     parser.add_argument(
         "--role-type",
         choices=list(ROLE_TEMPLATE_MAP.keys()),
         default=DEFAULT_ROLE,
-        help="Target evaluation rubric.",
+        help="Target evaluation rubric (default: %(default)s).",
     )
     parser.add_argument(
         "--target-job-title",
         default="",
         help="Optional job title, e.g. 'Data Analyst' or 'AML Analyst'.",
+    )
+    parser.add_argument(
+        "--model",
+        default=DEFAULT_MODEL,
+        help=(
+            "LLM model name to use for evaluation (default: %(default)s).\n"
+            "Examples:\n"
+            "  Ollama : llama3, mistral, gemma3, deepseek-r1\n"
+            "  Gemini : gemini-1.5-flash, gemini-1.5-pro"
+        ),
     )
     return parser.parse_args()
 
@@ -124,11 +137,13 @@ def _github_cache_path(pdf_path: str) -> str:
     return f"cache/githubcache_{Path(pdf_path).stem}.json"
 
 
-def _evaluation_cache_path(pdf_path: str, role_type: str, target_job_title: str) -> str:
-    # Use the real PDF stem (already filesystem-safe), not the candidate name
+def _evaluation_cache_path(
+    pdf_path: str, role_type: str, target_job_title: str, model_name: str
+) -> str:
     return (
         f"cache/evalcache_{_safe_slug(Path(pdf_path).stem)}_"
-        f"{_safe_slug(role_type)}_{_safe_slug(target_job_title)}.json"
+        f"{_safe_slug(role_type)}_{_safe_slug(target_job_title)}_"
+        f"{_safe_slug(model_name)}.json"
     )
 
 
@@ -224,15 +239,16 @@ def _evaluate_resume(
     blog_data: dict | None = None,
     role_type: str = DEFAULT_ROLE,
     target_job_title: str = "",
+    model_name: str = DEFAULT_MODEL,
 ) -> Optional[EvaluationData | GenericSGEvaluation]:
     if resume_data is None:
         return None
 
-    # Use the real pdf_path stem (safe) — never the candidate name
     eval_cache_filename = _evaluation_cache_path(
         pdf_path=pdf_path,
         role_type=role_type,
         target_job_title=target_job_title,
+        model_name=model_name,
     )
 
     if DEVELOPMENT_MODE and os.path.exists(eval_cache_filename):
@@ -253,8 +269,8 @@ def _evaluate_resume(
             except OSError:
                 pass
 
-    model_params = MODEL_PARAMETERS.get(DEFAULT_MODEL)
-    evaluator = ResumeEvaluator(model_name=DEFAULT_MODEL, model_params=model_params)
+    model_params = MODEL_PARAMETERS.get(model_name) or MODEL_PARAMETERS.get(DEFAULT_MODEL)
+    evaluator = ResumeEvaluator(model_name=model_name, model_params=model_params)
 
     resume_text = _build_resume_context(
         resume_data=resume_data,
@@ -287,22 +303,22 @@ def _resolve_candidate_name(pdf_path: str, resume_data: JSONResume | None) -> st
 
 def _print_shared_footer(evaluation) -> None:
     if evaluation.bonus_points and evaluation.bonus_points.total > 0:
-        print(f"\n⭐ BONUS POINTS: +{evaluation.bonus_points.total}")
+        print(f"\n\u2b50 BONUS POINTS: +{evaluation.bonus_points.total}")
         if evaluation.bonus_points.breakdown:
             print(f"   {evaluation.bonus_points.breakdown}")
 
     if evaluation.deductions and evaluation.deductions.total > 0:
-        print(f"\n⚠️  DEDUCTIONS: -{evaluation.deductions.total}")
+        print(f"\n\u26a0\ufe0f  DEDUCTIONS: -{evaluation.deductions.total}")
         if evaluation.deductions.reasons:
             print(f"   {evaluation.deductions.reasons}")
 
     if evaluation.key_strengths:
-        print("\n✅ KEY STRENGTHS:")
+        print("\n\u2705 KEY STRENGTHS:")
         for i, item in enumerate(evaluation.key_strengths, start=1):
             print(f"   {i}. {item}")
 
     if evaluation.areas_for_improvement:
-        print("\n🔧 AREAS FOR IMPROVEMENT:")
+        print("\n\U0001f527 AREAS FOR IMPROVEMENT:")
         for i, item in enumerate(evaluation.areas_for_improvement, start=1):
             print(f"   {i}. {item}")
 
@@ -312,25 +328,27 @@ def print_evaluation_results(
     candidate_name: str,
     role_type: str = DEFAULT_ROLE,
     target_job_title: str = "",
+    model_name: str = DEFAULT_MODEL,
 ) -> None:
     print("\n" + "=" * 80)
-    print(f"📊 RESUME EVALUATION RESULTS FOR: {candidate_name}")
-    print(f"🎯 ROLE: {ROLE_DISPLAY_LABELS.get(role_type, role_type)}")
+    print(f"\U0001f4ca RESUME EVALUATION RESULTS FOR: {candidate_name}")
+    print(f"\U0001f3af ROLE: {ROLE_DISPLAY_LABELS.get(role_type, role_type)}")
+    print(f"\U0001f916 MODEL: {model_name}")
     if target_job_title:
-        print(f"🧭 TARGET JOB TITLE: {target_job_title}")
+        print(f"\U0001f9ed TARGET JOB TITLE: {target_job_title}")
     print("=" * 80)
 
     if evaluation is None:
-        print("❌ No evaluation data available.")
+        print("\u274c No evaluation data available.")
         print("=" * 80)
         return
 
     if isinstance(evaluation, GenericSGEvaluation):
-        print(f"\n🎯 OVERALL SCORE: {evaluation.total_score()}/{evaluation.max_score()}")
-        print("\n📈 DETAILED SCORES:")
+        print(f"\n\U0001f3af OVERALL SCORE: {evaluation.total_score()}/{evaluation.max_score()}")
+        print("\n\U0001f4c8 DETAILED SCORES:")
         print("-" * 60)
         for category_name, category_data in evaluation.scores.items():
-            icon = CATEGORY_ICONS.get(category_name, "📌")
+            icon = CATEGORY_ICONS.get(category_name, "\U0001f4cc")
             label = category_name.replace("_", " ").title()
             print(f"{icon} {label:<34} {category_data.score}/{category_data.max}")
             print(f"   Evidence: {category_data.evidence}\n")
@@ -338,8 +356,8 @@ def print_evaluation_results(
         print("\n" + "=" * 80)
         return
 
-    print(f"\n🎯 OVERALL SCORE: {evaluation.total_score()}/{evaluation.max_score()}")
-    print("\n📈 DETAILED SCORES:")
+    print(f"\n\U0001f3af OVERALL SCORE: {evaluation.total_score()}/{evaluation.max_score()}")
+    print("\n\U0001f4c8 DETAILED SCORES:")
     print("-" * 60)
     for category_name, category_data in [
         ("open_source", evaluation.scores.open_source),
@@ -347,7 +365,7 @@ def print_evaluation_results(
         ("production", evaluation.scores.production),
         ("technical_skills", evaluation.scores.technical_skills),
     ]:
-        icon = CATEGORY_ICONS.get(category_name, "📌")
+        icon = CATEGORY_ICONS.get(category_name, "\U0001f4cc")
         label = category_name.replace("_", " ").title()
         print(f"{icon} {label:<34} {category_data.score}/{category_data.max}")
         print(f"   Evidence: {category_data.evidence}\n")
@@ -387,14 +405,19 @@ def _write_csv(
         writer = csv.DictWriter(
             csvfile,
             fieldnames=list(csv_row.keys()),
-            extrasaction="ignore",   # prevents crash when keys differ between runs
+            extrasaction="ignore",
         )
         if not file_exists:
             writer.writeheader()
         writer.writerow(csv_row)
 
 
-def main(pdf_path: str, role_type: str = DEFAULT_ROLE, target_job_title: str = ""):
+def main(
+    pdf_path: str,
+    role_type: str = DEFAULT_ROLE,
+    target_job_title: str = "",
+    model_name: str = DEFAULT_MODEL,
+):
     resume_data = _load_resume_data(pdf_path)
     if resume_data is None:
         logger.error("Failed to extract resume data from %s", pdf_path)
@@ -408,6 +431,7 @@ def main(pdf_path: str, role_type: str = DEFAULT_ROLE, target_job_title: str = "
         github_data=github_data,
         role_type=role_type,
         target_job_title=target_job_title,
+        model_name=model_name,
     )
 
     candidate_name = _resolve_candidate_name(pdf_path, resume_data)
@@ -416,6 +440,7 @@ def main(pdf_path: str, role_type: str = DEFAULT_ROLE, target_job_title: str = "
         candidate_name=candidate_name,
         role_type=role_type,
         target_job_title=target_job_title,
+        model_name=model_name,
     )
 
     _write_csv(
@@ -441,4 +466,5 @@ if __name__ == "__main__":
         pdf_path=args.pdf_path,
         role_type=args.role_type,
         target_job_title=args.target_job_title,
+        model_name=args.model,
     )

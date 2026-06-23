@@ -28,6 +28,7 @@ class ResumeEvaluator:
         )
         self.template_manager = TemplateManager()
         self.provider = initialize_llm_provider(self.model_name)
+        logger.info("ResumeEvaluator initialised with model: %s", self.model_name)
 
     def _call_llm(
         self,
