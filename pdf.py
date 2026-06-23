@@ -270,21 +270,21 @@ class PDFHandler:
 
         sections = ["basics", "work", "education", "skills", "projects", "awards"]
 
-        complete_resume = {
-            "basics": None,
-            "work": None,
-            "volunteer": None,
-            "education": None,
-            "awards": None,
-            "certificates": None,
-            "publications": None,
-            "skills": None,
-            "languages": None,
-            "interests": None,
-            "references": None,
-            "projects": None,
-            "meta": None,
-        }
+     complete_resume = {
+    "basics": None,
+    "work": [],
+    "volunteer": [],
+    "education": [],
+    "awards": [],
+    "certificates": [],
+    "publications": [],
+    "skills": [],
+    "languages": [],
+    "interests": [],
+    "references": [],
+    "projects": [],
+    "meta": {},
+}
 
         for section_name in sections:
             section_data = self._extract_section_data(text_content, section_name)
