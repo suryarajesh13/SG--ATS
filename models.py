@@ -153,6 +153,23 @@ class JSONResume(BaseModel):
     projects: List[Project] = Field(default_factory=list)
     meta: Dict = Field(default_factory=dict)
 
+class BasicsSection(BaseModel):
+    basics: Optional[Basics] = None
+
+class WorkSection(BaseModel):
+    work: List[Work] = Field(default_factory=list)
+
+class EducationSection(BaseModel):
+    education: List[Education] = Field(default_factory=list)
+
+class SkillsSection(BaseModel):
+    skills: List[Skill] = Field(default_factory=list)
+
+class ProjectsSection(BaseModel):
+    projects: List[Project] = Field(default_factory=list)
+
+class AwardsSection(BaseModel):
+    awards: List[Award] = Field(default_factory=list)
 
 class CategoryScore(BaseModel):
     score: int = 0
