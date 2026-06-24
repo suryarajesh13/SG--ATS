@@ -1,0 +1,31 @@
+Evaluate the following resume for a Singapore banking/financial services role.
+{% if target_job_title %}Target job title: {{ target_job_title }}{% endif %}
+
+RESUME:
+{{ text_content }}
+
+Return a JSON object with this exact structure:
+{
+  "scores": {
+    "sg_banking_credentials": {"score": <int>, "max": 30, "evidence": "<string>"},
+    "banking_experience": {"score": <int>, "max": 35, "evidence": "<string>"},
+    "regulatory_and_risk": {"score": <int>, "max": 25, "evidence": "<string>"},
+    "systems_and_analysis": {"score": <int>, "max": 10, "evidence": "<string>"}
+  },
+  "bonus_points": {"total": <int 0-20>, "breakdown": "<string>"},
+  "deductions": {"total": <int>, "reasons": "<string>"},
+  "key_strengths": ["<string>"],
+  "areas_for_improvement": ["<string>"]
+}
+
+Scoring guidance:
+- sg_banking_credentials (max 30): CMFAS, IBF certifications, finance/banking qualifications
+- banking_experience (max 35): banking ops, relationship support, KYC, AML, onboarding, reconciliations
+- regulatory_and_risk (max 25): MAS regulations, AML/CFT, compliance, transaction monitoring
+- systems_and_analysis (max 10): Excel, reporting tools, analytical platforms, banking systems
+
+Rules:
+- score must not exceed max
+- key_strengths: max 5 items
+- areas_for_improvement: max 3 items
+- evidence must not be empty
