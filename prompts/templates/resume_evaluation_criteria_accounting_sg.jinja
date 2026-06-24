@@ -1,0 +1,31 @@
+Evaluate the following resume for a Singapore accounting role.
+{% if target_job_title %}Target job title: {{ target_job_title }}{% endif %}
+
+RESUME:
+{{ text_content }}
+
+Return a JSON object with this exact structure:
+{
+  "scores": {
+    "sg_certifications": {"score": <int>, "max": 30, "evidence": "<string>"},
+    "accounting_experience": {"score": <int>, "max": 35, "evidence": "<string>"},
+    "finance_systems": {"score": <int>, "max": 25, "evidence": "<string>"},
+    "professional_communication": {"score": <int>, "max": 10, "evidence": "<string>"}
+  },
+  "bonus_points": {"total": <int 0-20>, "breakdown": "<string>"},
+  "deductions": {"total": <int>, "reasons": "<string>"},
+  "key_strengths": ["<string>"],
+  "areas_for_improvement": ["<string>"]
+}
+
+Scoring guidance:
+- sg_certifications (max 30): CA Singapore, SCAQ, ISCA, ACCA, CPA Australia, ICAEW
+- accounting_experience (max 35): full-set accounts, month-end close, reconciliations, GST, financial reporting
+- finance_systems (max 25): SAP, Oracle, Xero, QuickBooks, advanced Excel, finance tools
+- professional_communication (max 10): report writing, stakeholder communication, documentation
+
+Rules:
+- score must not exceed max
+- key_strengths: max 5 items
+- areas_for_improvement: max 3 items
+- evidence must not be empty
