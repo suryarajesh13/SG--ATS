@@ -363,4 +363,4 @@ def validate_sg_categories(evaluation: GenericSGEvaluation, role_type: str) -> L
 def assert_sg_categories(evaluation: GenericSGEvaluation, role_type: str) -> None:
     warnings = validate_sg_categories(evaluation, role_type)
     if warnings:
-        raise ValueError(" ; ".join(warnings)))
+        raise ValueError(" ; ".join(warnings))
