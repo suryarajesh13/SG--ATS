@@ -340,4 +340,4 @@ SG-ATS/
 - [IMDA ICT Skills Framework](https://www.imda.gov.sg)
 - [Ollama](https://ollama.com)
 - [Original upstream repo — interviewstreet/hiring-agent](https://github.com/interviewstreet/hiring-agent)
-"""
+
