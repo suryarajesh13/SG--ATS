@@ -205,17 +205,22 @@ class CategoryScore(BaseModel):
 
 
 class SoftwareScores(BaseModel):
-    open_source: CategoryScore = Field(
-        default_factory=lambda: CategoryScore(score=0, max=35, evidence="Not provided")
-    )
-    self_projects: CategoryScore = Field(
-        default_factory=lambda: CategoryScore(score=0, max=30, evidence="Not provided")
-    )
-    production: CategoryScore = Field(
+    """
+    Flexible rubric for Software / IT roles.
+    Designed to fairly assess student, fresh graduate, and early-career candidates.
+    Academic projects, internships, and course assignments are all valid evidence.
+    """
+    technical_skills: CategoryScore = Field(
         default_factory=lambda: CategoryScore(score=0, max=25, evidence="Not provided")
     )
-    technical_skills: CategoryScore = Field(
-        default_factory=lambda: CategoryScore(score=0, max=10, evidence="Not provided")
+    projects_and_delivery: CategoryScore = Field(
+        default_factory=lambda: CategoryScore(score=0, max=35, evidence="Not provided")
+    )
+    applied_experience: CategoryScore = Field(
+        default_factory=lambda: CategoryScore(score=0, max=25, evidence="Not provided")
+    )
+    professional_readiness: CategoryScore = Field(
+        default_factory=lambda: CategoryScore(score=0, max=15, evidence="Not provided")
     )
 
 
@@ -264,29 +269,23 @@ class EvaluationData(BaseModel):
 
     def total_score(self) -> int:
         raw = (
-            self.scores.open_source.score
-            + self.scores.self_projects.score
-            + self.scores.production.score
-            + self.scores.technical_skills.score
+            self.scores.technical_skills.score
+            + self.scores.projects_and_delivery.score
+            + self.scores.applied_experience.score
+            + self.scores.professional_readiness.score
         )
         return raw + self.bonus_points.total - self.deductions.total
 
     def max_score(self) -> int:
         return (
-            self.scores.open_source.max
-            + self.scores.self_projects.max
-            + self.scores.production.max
-            + self.scores.technical_skills.max
+            self.scores.technical_skills.max
+            + self.scores.projects_and_delivery.max
+            + self.scores.applied_experience.max
+            + self.scores.professional_readiness.max
         )
 
 
 ROLE_CATEGORY_MAP: Dict[str, List[str]] = {
-    "it_sg": [
-        "sg_technical_skills",
-        "projects_and_delivery",
-        "production_experience",
-        "professional_readiness",
-    ],
     "accounting_sg": [
         "sg_certifications",
         "accounting_experience",
@@ -311,6 +310,14 @@ ROLE_CATEGORY_MAP: Dict[str, List[str]] = {
         "regulatory_and_risk",
         "systems_and_analysis",
     ],
+    "general": [
+        "contact_and_summary",
+        "work_experience",
+        "education",
+        "skills",
+        "projects",
+        "formatting_readability",
+    ],
 }
 
 
@@ -330,14 +337,6 @@ class GenericSGEvaluation(BaseModel):
     @classmethod
     def improvements_limit(cls, value: List[str]) -> List[str]:
         return value[:3]
-
-    @model_validator(mode="after")
-    def validate_category_count(self) -> "GenericSGEvaluation":
-        if len(self.scores) != 4:
-            raise ValueError(
-                f"Exactly 4 score categories are required, got {len(self.scores)}."
-            )
-        return self
 
     def total_score(self) -> int:
         raw = sum(c.score for c in self.scores.values())
@@ -364,3 +363,4 @@ def assert_sg_categories(evaluation: GenericSGEvaluation, role_type: str) -> Non
     warnings = validate_sg_categories(evaluation, role_type)
     if warnings:
         raise ValueError(" ; ".join(warnings))
+
