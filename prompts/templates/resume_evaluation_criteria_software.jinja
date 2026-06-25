@@ -1,135 +1,33 @@
-You are an expert resume evaluator for Software / IT roles in Singapore.
+Evaluate this resume for a Software/IT role in Singapore. Candidate: {{ target_job_title if target_job_title else "fresh graduate / early-career" }}.
 
-You are evaluating a {{ "fresh graduate" if not target_job_title else target_job_title }} candidate.
+RULES:
+- Academic projects, FYPs, group assignments, internships all count as valid evidence.
+- Do NOT penalise for missing GitHub or deployed projects.
+- Score what is present. Give partial credit generously.
 
-IMPORTANT CONTEXT:
-- This rubric is designed for early-career, student, and fresh graduate candidates.
-- Academic projects, internships, course assignments, and self-taught work are ALL valid evidence.
-- You must NOT penalise candidates for not having open source contributions or production deployments.
-- Score based on what is present, not what is absent.
-- Be generous with partial credit. A project with clear technical depth deserves credit even without a GitHub link.
-
----
-
-RESUME TEXT:
+RESUME:
 {{ text_content }}
 
----
+SCORE THESE 4 CATEGORIES:
 
-{% if target_job_title %}
-TARGET JOB TITLE: {{ target_job_title }}
-{% endif %}
+1. technical_skills (max 25): Languages, frameworks, tools, databases. Academic exposure counts.
+   25=strong multi-stack with evidence | 15=solid list with some use | 8=basic list | 0=none
 
----
+2. projects_and_delivery (max 35): FYPs, coursework, personal or group projects. GitHub/deployment optional.
+   35=2+ substantial projects with stack+contribution+outcomes | 20=1-2 decent projects | 10=light detail | 0=none
 
-SCORING RUBRIC (total: 100 points):
+3. applied_experience (max 25): Any work with technical/analytical signals. NS, internships, Excel VBA, data reports all count.
+   25=clear technical contribution | 15=tech-adjacent work | 8=transferable skills only | 0=none
 
-## 1. Technical Skills & Stack Breadth (25 points)
-Score based on the range and relevance of technical skills mentioned.
-- Languages, frameworks, tools, databases, platforms
-- Academic or personal exposure counts
-- Bonus for Singapore-relevant stacks (cloud, data, enterprise, web)
+4. professional_readiness (max 15): Structure, contact info, LinkedIn, relevant degree, leadership.
+   15=polished+quantified+relevant degree | 10=mostly clear | 5=some gaps | 0=poor
 
-Scoring guide:
-- 20-25: Strong multi-stack evidence with relevant tools (e.g. React, Flask, SQL, Python, Excel automation)
-- 13-19: Solid skills list with some demonstrated use in projects or work
-- 6-12: Basic skills mentioned but little evidence of application
-- 0-5: Minimal or no technical skills visible
+BONUS (add to total, max 10):
++3 GitHub links present | +3 deployed/live project | +2 certifications | +2 tech leadership role
 
-## 2. Projects & Delivery (35 points)
-Score based on technical projects — university assignments, FYPs, personal projects, hackathons, internship deliverables.
-- Academic group projects count fully
-- Coursework projects count if they show real technical work
-- GitHub links are a bonus but NOT required
-- Deployed/live projects are a bonus but NOT required
-- What matters: complexity, tech stack used, your individual contribution, what was built
+DEDUCTIONS (subtract from total, max 10):
+-3 formatting issues | -3 skills with zero evidence | -2 inconsistent dates
 
-Scoring guide:
-- 28-35: 2+ substantial projects with clear stack, architecture, individual contribution, and outcomes
-- 18-27: 1-2 projects with decent technical depth and described implementation
-- 8-17: Projects mentioned but light on technical detail
-- 0-7: No meaningful project evidence
+Respond ONLY with this JSON and nothing else:
+{"scores":{"technical_skills":{"score":0,"max":25,"evidence":""},"projects_and_delivery":{"score":0,"max":35,"evidence":""},"applied_experience":{"score":0,"max":25,"evidence":""},"professional_readiness":{"score":0,"max":15,"evidence":""}},"bonus_points":{"total":0,"breakdown":""},"deductions":{"total":0,"reasons":""},"key_strengths":["","",""],"areas_for_improvement":["",""]}
 
-## 3. Applied / Work Experience (25 points)
-Score based on any work experience where technical or analytical skills were applied.
-- Internships, part-time roles, NS, admin roles with automation/analytics all count
-- Excel VBA, data reporting, system use, automation = valid technical signals
-- Even non-tech roles count if they show analytical thinking, process improvement, or tool use
-
-Scoring guide:
-- 20-25: Clear technical or analytical contribution in at least one role (e.g. automation, data work, systems)
-- 13-19: Some tech-adjacent work (e.g. Excel reporting, social media analytics, content tools)
-- 6-12: Mostly non-technical but shows transferable skills
-- 0-5: No work experience or purely manual roles with no transferable signals
-
-## 4. Professional Readiness & Presentation (15 points)
-Score based on how job-ready the candidate appears overall.
-- Clear structure, quantified achievements, action verbs
-- LinkedIn or contact info present
-- Leadership, teamwork, communication evidence
-- Studying a relevant degree (e.g. Computer Science, IT, Engineering, Data)
-
-Scoring guide:
-- 12-15: Polished, well-structured, quantified, relevant degree, professional links
-- 8-11: Mostly clear with some gaps in quantification or structure
-- 4-7: Decent but hard to scan, missing key details
-- 0-3: Poor structure, missing information, hard to assess
-
----
-
-BONUS POINTS (max +10):
-- +3: GitHub profile or repo links present (even if not verified)
-- +3: Any deployed or live project mentioned (URL, platform, hosting)
-- +2: Relevant certifications (AWS, Google, Microsoft, cybersecurity, etc.)
-- +2: Leadership role in a tech/computing club or organisation
-
-DEDUCTIONS (max -10):
-- -3: Significant formatting issues or walls of unstructured text
-- -3: Skills listed with zero evidence of ever using them
-- -2: Dates missing or inconsistent across experience entries
-
----
-
-OUTPUT FORMAT (strict JSON, no extra text):
-
-{
-  "scores": {
-    "technical_skills": {
-      "score": <0-25>,
-      "max": 25,
-      "evidence": "<specific quote or observation from resume>"
-    },
-    "projects_and_delivery": {
-      "score": <0-35>,
-      "max": 35,
-      "evidence": "<specific quote or observation from resume>"
-    },
-    "applied_experience": {
-      "score": <0-25>,
-      "max": 25,
-      "evidence": "<specific quote or observation from resume>"
-    },
-    "professional_readiness": {
-      "score": <0-15>,
-      "max": 15,
-      "evidence": "<specific quote or observation from resume>"
-    }
-  },
-  "bonus_points": {
-    "total": <0-10>,
-    "breakdown": "<brief explanation of bonuses awarded>"
-  },
-  "deductions": {
-    "total": <0-10>,
-    "reasons": "<brief explanation of deductions if any>"
-  },
-  "key_strengths": [
-    "<strength 1>",
-    "<strength 2>",
-    "<strength 3>"
-  ],
-  "areas_for_improvement": [
-    "<area 1>",
-    "<area 2>"
-  ]
-}
