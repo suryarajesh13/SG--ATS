@@ -26,6 +26,10 @@ from transform import transform_parsed_data
 
 logger = logging.getLogger(__name__)
 
+# Set to 0 to disable timeout entirely (recommended for large models like gemma3:12b on CPU).
+# Set to a positive integer (seconds) to cap each section call e.g. 600 = 10 minutes.
+LLM_SECTION_TIMEOUT = 0
+
 
 class PDFHandler:
     def __init__(self, model_name: str = DEFAULT_MODEL):
@@ -36,7 +40,7 @@ class PDFHandler:
     def extract_text_from_pdf(self, pdf_path: str) -> Optional[str]:
         try:
             if not os.path.exists(pdf_path):
-                raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+                raise FileNotFoundError("PDF file not found: " + pdf_path)
 
             with pymupdf.open(pdf_path) as doc:
                 resume_text = to_markdown(doc, pages=range(doc.page_count))
@@ -82,6 +86,12 @@ class PDFHandler:
             kwargs = {}
             if return_model is not None:
                 kwargs["format"] = return_model.model_json_schema()
+
+            # Timeout control: 0 means no limit.
+            if LLM_SECTION_TIMEOUT and LLM_SECTION_TIMEOUT > 0:
+                kwargs["options"] = {"timeout": LLM_SECTION_TIMEOUT}
+
+            logger.info("Calling LLM for section: %s (no timeout)", section_name)
 
             response = self.provider.chat(
                 model=self.model_name,
@@ -272,6 +282,7 @@ class PDFHandler:
         complete_resume = self._empty_resume_payload()
 
         for section_name in sections:
+            logger.info("Extracting section: %s", section_name)
             section_data = self._extract_section_data(text_content, section_name)
 
             if not section_data:
